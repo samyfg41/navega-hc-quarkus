@@ -13,17 +13,17 @@ public class TesteInserir {
         return JOptionPane.showInputDialog(j);
     }
 
-    //int
-    static Integer inteiro(String j){
+    //Int
+    static int inteiro(String j){
         return Integer.parseInt(JOptionPane.showInputDialog(j));
     }
 
-    //double
-    static Double real(String j){
+    //Double
+    static double real(String j){
         return Double.parseDouble(JOptionPane.showInputDialog(j));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
         UsuarioDAO usuarioDAO = null;
         TempoUsoDAO tempoUsoDAO = null;
         PerguntaPrincipalDAO perguntaPrincipalDAO = null;
@@ -31,78 +31,79 @@ public class TesteInserir {
         AvaliacaoDAO avaliacaoDAO = null;
 
         try {
-            // ========== 1. USUÁRIO  ==========
+            //Instanciar objetos
             Usuario objUsuario = new Usuario();
-            usuarioDAO = new UsuarioDAO();
-
-            objUsuario.setNome(texto("Digite o nome do usuário"));
-            objUsuario.setIdade(inteiro("Digite a idade do usuário"));
-
             DispositivoAcesso objDispositivoAcesso = new DispositivoAcesso();
-            objDispositivoAcesso.setTipo(texto("Tipo de dispositivo (ex: celular, computador, tablet):"));
-            objDispositivoAcesso.setSistema(texto("Sistema do dispositivo (ex: Android, iOS, Windows):"));
+            TempoUso objTempoUso = new TempoUso();
+            PerguntaPrincipal objPerguntaPrincipal = new PerguntaPrincipal();
+            Dificuldade objDificuldade = new Dificuldade();
+            Avaliacao objAvaliacao = new Avaliacao();
 
+            //Atribuir a objUsuario
+            objUsuario.setNome(texto("Digite o nome do usuário:"));
+            objUsuario.setIdade(inteiro("Digite a idade do usuário:"));
+
+            //Atribuir a objDispositivoAcesso
+            objDispositivoAcesso.setTipo(texto("Digite o tipo de dispositivo (ex: celular, desktop):"));
+            objDispositivoAcesso.setSistema(texto("Digite o sistema operacional (ex: Android, iOS, Windows):"));
+
+            //Atribuir o dispositivo ao usuário
             objUsuario.setDispositivoAcesso(objDispositivoAcesso);
 
+            usuarioDAO = new UsuarioDAO();
             System.out.println(usuarioDAO.inserir(objUsuario));
 
+            //TempoUsoDAO
+            objTempoUso.setId(objUsuario.getId());
+            objTempoUso.setExperiencia(texto("Como foi sua experiência? (ex: Boa, Ruim, Regular):"));
+            objTempoUso.setSugestao(texto("Alguma sugestão de melhoria?"));
+            objTempoUso.setTempo(texto("Há quanto tempo usa? (ex: 1 ano, 6 meses):"));
+            objTempoUso.setFrequencia(texto("Com que frequência usa? (ex: diária, semanal):"));
 
-            int feedbackId = objUsuario.getId();
-            System.out.println("ID do feedback gerado: " + feedbackId);
-
-            // ========== 2. TEMPO DE USO  ==========
-            TempoUso objTempoUso = new TempoUso();
             tempoUsoDAO = new TempoUsoDAO();
+            System.out.println(tempoUsoDAO.inserir(objTempoUso));
 
-            objTempoUso.setExperiencia(texto("Como foi sua experiência ao utilizar o site?"));
-            objTempoUso.setSugestao(texto("Nos ajude a melhorar, deixe sua sugestão:"));
-            objTempoUso.setTempo(texto("Há quanto tempo você conhece ou usa o site Navega HC?"));
-            objTempoUso.setFrequencia(texto("Com que frequência você utiliza o site?"));
+            //PerguntaPrincipalDAO
+            objPerguntaPrincipal.setId(objUsuario.getId());
+            objPerguntaPrincipal.setPergunta(texto("Qual sua principal dúvida ou pergunta?"));
 
-            System.out.println(tempoUsoDAO.atualizar(feedbackId, objTempoUso));
-
-            // ========== 3. PERGUNTA PRINCIPAL (UPDATE) ==========
-            PerguntaPrincipal objPerguntaPrincipal = new PerguntaPrincipal();
             perguntaPrincipalDAO = new PerguntaPrincipalDAO();
+            System.out.println(perguntaPrincipalDAO.inserir(objPerguntaPrincipal));
 
-            objPerguntaPrincipal.setPergunta(texto("Você gostou do site NavegaHC?"));
+            //DificuldadeDAO
+            objDificuldade.setId(objUsuario.getId());
+            objDificuldade.setTipo(texto("Tipo de dificuldade (ex: login, navegação, carregamento):"));
+            objDificuldade.setDescricao(texto("Descreva a dificuldade:"));
 
-            System.out.println(perguntaPrincipalDAO.atualizar(feedbackId, objPerguntaPrincipal));
-
-            // ========== 4. DIFICULDADE (UPDATE) ==========
-            Dificuldade objDificuldade = new Dificuldade();
             dificuldadeDAO = new DificuldadeDAO();
+            System.out.println(dificuldadeDAO.inserir(objDificuldade));
 
-            objDificuldade.setTipo(texto("Tipo de dificuldade (ex: login, consulta, ajuda):"));
-            objDificuldade.setDescricao(texto("Descreva como foi sua dificuldade:"));
+            //AvaliacaoDAO
+            objAvaliacao.setId(objUsuario.getId());
+            objAvaliacao.setAvaliar(real("Avalie de 0 a 10:"));
 
-            System.out.println(dificuldadeDAO.atualizar(feedbackId, objDificuldade));
-
-            // ========== 5. AVALIAÇÃO (UPDATE) ==========
-            Avaliacao objAvaliacao = new Avaliacao();
             avaliacaoDAO = new AvaliacaoDAO();
-
-            objAvaliacao.setAvaliar(real("Deixe sua avaliação (1 a 5) de como foi sua visita:"));
-
-            System.out.println(avaliacaoDAO.atualizar(feedbackId, objAvaliacao));
-
-            System.out.println("\nFEEDBACK COMPLETO CADASTRADO COM SUCESSO!");
-
-        } catch (SQLException | ClassNotFoundException e) {
-            System.out.println("ERRO: " + e.getMessage());
+            System.out.println(avaliacaoDAO.inserir(objAvaliacao));
 
         } finally {
-            // Fecha todas as conexões
-            try {
-                if (usuarioDAO != null) usuarioDAO.fecharConexao();
-                if (tempoUsoDAO != null) tempoUsoDAO.fecharConexao();
-                if (perguntaPrincipalDAO != null) perguntaPrincipalDAO.fecharConexao();
-                if (dificuldadeDAO != null) dificuldadeDAO.fecharConexao();
-                if (avaliacaoDAO != null) avaliacaoDAO.fecharConexao();
-            } catch (SQLException e) {
-                System.out.println("Erro ao fechar conexão: " + e.getMessage());
+            // ✅ FECHA AS CONEXÕES
+            if (usuarioDAO != null) {
+                try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (tempoUsoDAO != null) {
+                try { tempoUsoDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (perguntaPrincipalDAO != null) {
+                try { perguntaPrincipalDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (dificuldadeDAO != null) {
+                try { dificuldadeDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (avaliacaoDAO != null) {
+                try { avaliacaoDAO.fecharConexao(); } catch (SQLException e) { }
             }
         }
     }
 }
+
 

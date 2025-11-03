@@ -13,72 +13,98 @@ public class TesteAtualizar {
         return JOptionPane.showInputDialog(j);
     }
 
-    //int
-    static Integer inteiro(String j){
+    //Int
+    static int inteiro(String j){
         return Integer.parseInt(JOptionPane.showInputDialog(j));
     }
 
-    //double
-    static Double real(String j){
+    //Double
+    static double real(String j){
         return Double.parseDouble(JOptionPane.showInputDialog(j));
     }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
+        UsuarioDAO usuarioDAO = null;
+        TempoUsoDAO tempoUsoDAO = null;
+        PerguntaPrincipalDAO perguntaPrincipalDAO = null;
+        DificuldadeDAO dificuldadeDAO = null;
+        AvaliacaoDAO avaliacaoDAO = null;
 
-        //UsuarioDAO
-        Usuario objUsuario = new Usuario();
-        UsuarioDAO usuarioDAO = new UsuarioDAO();
+        try {
+            //Instanciar objetos
+            Usuario objUsuario = new Usuario();
+            DispositivoAcesso objDispositivoAcesso = new DispositivoAcesso();
+            TempoUso objTempoUso = new TempoUso();
+            PerguntaPrincipal objPerguntaPrincipal = new PerguntaPrincipal();
+            Dificuldade objDificuldade = new Dificuldade();
+            Avaliacao objAvaliacao = new Avaliacao();
 
-        objUsuario.setId(inteiro("Informe o ID do usuário a ser atualizado"));
-        objUsuario.setNome(texto("Atualize o nome"));
-        objUsuario.setIdade(inteiro("Atualize a idade"));
+            //Atribuir a objUsuario
+            objUsuario.setId(inteiro("Digite o ID do usuário para atualizar:"));
+            objUsuario.setNome(texto("Digite o novo nome do usuário:"));
+            objUsuario.setIdade(inteiro("Digite a nova idade do usuário:"));
 
-        DispositivoAcesso objDispositivoAcesso = new DispositivoAcesso();
-        objDispositivoAcesso.setTipo(texto("Atualize a informação do tipo de dispositivo"));
-        objDispositivoAcesso.setSistema(texto("Atualize a informação de sistema do dispositivo"));
-        objUsuario.setDispositivoAcesso(objDispositivoAcesso);
+            //Atribuir a objDispositivoAcesso
+            objDispositivoAcesso.setTipo(texto("Digite o novo tipo de dispositivo:"));
+            objDispositivoAcesso.setSistema(texto("Digite o novo sistema operacional:"));
 
-        System.out.println(usuarioDAO.atualizar(objUsuario));
+            //Atribuir o dispositivo ao usuário
+            objUsuario.setDispositivoAcesso(objDispositivoAcesso);
 
-        //TempoUsoDAO
-        TempoUso objTempoUso = new TempoUso();
-        TempoUsoDAO tempoUsoDAO = new TempoUsoDAO();
+            usuarioDAO = new UsuarioDAO();
+            System.out.println(usuarioDAO.atualizar(objUsuario));
 
-        objTempoUso.setId(inteiro("Informe o ID da informação TempoUso a ser atualizada"));
-        objTempoUso.setExperiencia(texto("Atualize a informação de experiência"));
-        objTempoUso.setSugestao(texto("Atualize a informação da sugestão"));
-        objTempoUso.setTempo(texto("Atualize a informação tempo"));
-        objTempoUso.setFrequencia(texto("Atualize a informação frequência"));
+            //TempoUsoDAO
+            objTempoUso.setId(objUsuario.getId());
+            objTempoUso.setExperiencia(texto("Digite a nova experiência:"));
+            objTempoUso.setSugestao(texto("Digite a nova sugestão:"));
+            objTempoUso.setTempo(texto("Digite o novo tempo de uso:"));
+            objTempoUso.setFrequencia(texto("Digite a nova frequência:"));
 
-        System.out.println(tempoUsoDAO.atualizarPorId(objTempoUso));
+            tempoUsoDAO = new TempoUsoDAO();
+            System.out.println(tempoUsoDAO.atualizar(objTempoUso)); // ✅ CORRIGIDO
 
-        //PerguntaPrincipalDAO
-        PerguntaPrincipal objPerguntaPrincipal = new PerguntaPrincipal();
-        PerguntaPrincipalDAO perguntaPrincipalDAO = new PerguntaPrincipalDAO();
+            //PerguntaPrincipalDAO
+            objPerguntaPrincipal.setId(objUsuario.getId());
+            objPerguntaPrincipal.setPergunta(texto("Digite a nova pergunta:"));
 
-        objPerguntaPrincipal.setId(inteiro("Informe o ID da informação PerguntaPrincipal a ser atualizada"));
-        objPerguntaPrincipal.setPergunta(texto("Atualize a resposta da PerguntaPrincipal"));
+            perguntaPrincipalDAO = new PerguntaPrincipalDAO();
+            System.out.println(perguntaPrincipalDAO.atualizar(objPerguntaPrincipal));
 
-        System.out.println(perguntaPrincipalDAO.atualizarPorId(objPerguntaPrincipal));
+            //DificuldadeDAO
+            objDificuldade.setId(objUsuario.getId());
+            objDificuldade.setTipo(texto("Digite o novo tipo de dificuldade:"));
+            objDificuldade.setDescricao(texto("Digite a nova descrição da dificuldade:"));
 
-        //DificuldadeDAO
-        Dificuldade objDificuldade = new Dificuldade();
-        DificuldadeDAO dificuldadeDAO = new DificuldadeDAO();
+            dificuldadeDAO = new DificuldadeDAO();
+            System.out.println(dificuldadeDAO.atualizar(objDificuldade));
 
-        objDificuldade.setId(inteiro("Informe o ID da informação Dificuldade a ser atualizada"));
-        objDificuldade.setTipo(texto("Atualize a informação de tipo de Dificuldade"));
-        objDificuldade.setDescricao(texto("Atualize a informação de descrição de Dificuldade"));
+            //AvaliacaoDAO
+            objAvaliacao.setId(objUsuario.getId());
+            objAvaliacao.setAvaliar(real("Digite a nova avaliação:"));
 
-        System.out.println(dificuldadeDAO.atualizarPorId(objDificuldade));
+            avaliacaoDAO = new AvaliacaoDAO();
+            System.out.println(avaliacaoDAO.atualizar(objAvaliacao));
 
-        //AvaliacaoDAO
-        Avaliacao objAvaliacao = new Avaliacao();
-        AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
-
-        objAvaliacao.setId(inteiro("Informe o ID da Avaliação a ser atualizada"));
-        objAvaliacao.setAvaliar(real("Atualize a Avaliação"));
-
-        System.out.println(avaliacaoDAO.atualizarPorId(objAvaliacao));
+        } finally {
+            // ✅ FECHA AS CONEXÕES
+            if (usuarioDAO != null) {
+                try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (tempoUsoDAO != null) {
+                try { tempoUsoDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (perguntaPrincipalDAO != null) {
+                try { perguntaPrincipalDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (dificuldadeDAO != null) {
+                try { dificuldadeDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (avaliacaoDAO != null) {
+                try { avaliacaoDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+        }
     }
 }
+
 

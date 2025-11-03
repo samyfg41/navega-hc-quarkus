@@ -4,105 +4,105 @@ import br.com.navegahc.beans.*;
 import br.com.navegahc.dao.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TesteSelecionar {
-
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
+        UsuarioDAO usuarioDAO = null;
+        TempoUsoDAO tempoUsoDAO = null;
+        PerguntaPrincipalDAO perguntaPrincipalDAO = null;
+        DificuldadeDAO dificuldadeDAO = null;
+        AvaliacaoDAO avaliacaoDAO = null;
 
-        //UsuarioDAO
-        UsuarioDAO usuarioDAO = new UsuarioDAO();
+        try {
+            // UsuarioDAO
+            usuarioDAO = new UsuarioDAO();
+            List<Usuario> listaUsuarios = usuarioDAO.selecionar();
 
-        List<Usuario> listaUsuarios = usuarioDAO.selecionar();
+            if (listaUsuarios != null) {
+                for (Usuario usuario : listaUsuarios) {
+                    System.out.println("\nFORMULÁRIO DE FEEDBACK: ");
+                    System.out.println("\nINFORMAÇÃO USUÁRIO: ");
+                    System.out.println("ID: " + usuario.getId());
+                    System.out.println("Nome: " + usuario.getNome());
+                    System.out.println("Idade: " + usuario.getIdade());
 
-        if(listaUsuarios != null){
-            System.out.println("===== [translate:INFORMAÇÕES USUÁRIO] =====");
-            System.out.printf("%-5s %-20s %-10s %-15s %-15s%n", "[translate:ID]", "[translate:NOME]", "[translate:IDADE]", "[translate:TIPO_DISPOSITIVO]", "[translate:SISTEMA_DISPOSITIVO]");
-            System.out.println("-----------------------------------------------------------------------------");
-            for (Usuario u : listaUsuarios) {
-                String tipoDispositivo = (u.getDispositivoAcesso() != null) ? u.getDispositivoAcesso().getTipo() : "-";
-                String sistemaDispositivo = (u.getDispositivoAcesso() != null) ? u.getDispositivoAcesso().getSistema() : "-";
-                System.out.printf("%-5d %-20s %-10s %-15s %-15s%n",
-                        u.getId(),
-                        u.getNome(),
-                        u.getIdade(),
-                        tipoDispositivo,
-                        sistemaDispositivo
-                );
+                    if (usuario.getDispositivoAcesso() != null) {
+                        System.out.println("\nINFORMAÇÃO DISPOSITIVO DE ACESSO: ");
+                        System.out.println("Tipo: " + usuario.getDispositivoAcesso().getTipo());
+                        System.out.println("Sistema: " + usuario.getDispositivoAcesso().getSistema());
+                    }
+                }
             }
-        }
 
-        //TempoUsoDAO
-        TempoUsoDAO tempoUsoDAO = new TempoUsoDAO();
+            // TempoUsoDAO
+            tempoUsoDAO = new TempoUsoDAO();
+            List<TempoUso> listaTempoUso = tempoUsoDAO.selecionar();
 
-        List<TempoUso> listaTempoUso = tempoUsoDAO.selecionar();
-
-        if(listaTempoUso != null){
-            System.out.println("\n===== [translate:INFORMAÇÕES TEMPO DE USO] =====");
-            System.out.printf("%-5s %-15s %-20s %-10s %-10s%n", "[translate:ID]", "[translate:EXPERIÊNCIA]", "[translate:SUGESTÃO]" , "[translate:TEMPO]", "[translate:FREQUÊNCIA]");
-            System.out.println("----------------------------------------------------------------");
-            for (TempoUso t : listaTempoUso){
-                System.out.printf("%-5d %-15s %-20s %-10s %-10s%n",
-                        t.getId(),
-                        t.getExperiencia(),
-                        t.getSugestao(),
-                        t.getTempo(),
-                        t.getFrequencia()
-                );
+            if (listaTempoUso != null) {
+                for (TempoUso tempoUso : listaTempoUso) {
+                    System.out.println("\nINFORMAÇÃO TEMPO DE USO: ");
+                    System.out.println("Experiência: " + tempoUso.getExperiencia());
+                    System.out.println("Sugestão: " + tempoUso.getSugestao());
+                    System.out.println("Tempo: " + tempoUso.getTempo());
+                    System.out.println("Frequência: " + tempoUso.getFrequencia());
+                }
             }
-        }
 
-        //PerguntaPrincipalDAO
-        PerguntaPrincipalDAO perguntaPrincipalDAO = new PerguntaPrincipalDAO();
+            // PerguntaPrincipalDAO
+            perguntaPrincipalDAO = new PerguntaPrincipalDAO();
+            List<PerguntaPrincipal> listaPerguntas = perguntaPrincipalDAO.selecionar();
 
-        List<PerguntaPrincipal> listaPerguntaPrincipal = perguntaPrincipalDAO.selecionar();
-
-        if(listaPerguntaPrincipal != null){
-            System.out.println("\n===== [translate:INFORMAÇÕES PERGUNTA PRINCIPAL] =====");
-            System.out.printf("%-5s %-20s%n", "[translate:ID]", "[translate:PERGUNTA]");
-            System.out.println("-----------------------------------");
-            for (PerguntaPrincipal p : listaPerguntaPrincipal){
-                System.out.printf("%-5d %-20s%n",
-                        p.getId(),
-                        p.getPergunta()
-                );
+            if (listaPerguntas != null) {
+                for (PerguntaPrincipal pergunta : listaPerguntas) {
+                    System.out.println("\nPERGUNTA PRINCIPAL: ");
+                    System.out.println("Pergunta: " + pergunta.getPergunta());
+                }
             }
-        }
 
-        //DificuldadeDAO
-        DificuldadeDAO dificuldadeDAO = new DificuldadeDAO();
+            // DificuldadeDAO
+            dificuldadeDAO = new DificuldadeDAO();
+            List<Dificuldade> listaDificuldades = dificuldadeDAO.selecionar();
 
-        List<Dificuldade> listaDificuldades = dificuldadeDAO.selecionar();
-
-        if(listaDificuldades != null){
-            System.out.println("\n===== [translate:INFORMAÇÕES DIFICULDADE] =====");
-            System.out.printf("%-5s %-20s %-20s%n", "[translate:ID]", "[translate:TIPO]", "[translate:DESCRIÇÃO]");
-            System.out.println("---------------------------------------------------");
-            for (Dificuldade d : listaDificuldades){
-                System.out.printf("%-5d %-20s %-20s%n",
-                        d.getId(),
-                        d.getTipo(),
-                        d.getDescricao()
-                );
+            if (listaDificuldades != null) {
+                for (Dificuldade dificuldade : listaDificuldades) {
+                    System.out.println("\nDIFICULDADE: ");
+                    System.out.println("Tipo: " + dificuldade.getTipo());
+                    System.out.println("Descrição: " + dificuldade.getDescricao());
+                }
             }
-        }
 
-        //AvaliacaoDAO
-        AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
+            // AvaliacaoDAO
+            avaliacaoDAO = new AvaliacaoDAO();
+            List<Avaliacao> listaAvaliacoes = avaliacaoDAO.selecionar();
 
-        List<Avaliacao> listaAvaliacoes = avaliacaoDAO.selecionar();
+            if (listaAvaliacoes != null) {
+                for (Avaliacao avaliacao : listaAvaliacoes) {
+                    System.out.println("\nAVALIAÇÃO: ");
+                    System.out.println("Nota: " + avaliacao.getAvaliar());
+                }
+            }
 
-        if(listaAvaliacoes != null){
-            System.out.println("\n===== [translate:INFORMAÇÕES DIFICULDADE] =====");
-            System.out.printf("%-5s %-10s%n", "[translate:ID]", "[translate:AVALIAR]");
-            System.out.println("-----------------------------------");
-            for (Avaliacao a : listaAvaliacoes){
-                System.out.printf("%-5d %-10s%n",
-                        a.getId(),
-                        a.getAvaliar()
-                );
+        } finally {
+            // ✅ FECHA AS CONEXÕES
+            if (usuarioDAO != null) {
+                try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (tempoUsoDAO != null) {
+                try { tempoUsoDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (perguntaPrincipalDAO != null) {
+                try { perguntaPrincipalDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (dificuldadeDAO != null) {
+                try { dificuldadeDAO.fecharConexao(); } catch (SQLException e) { }
+            }
+            if (avaliacaoDAO != null) {
+                try { avaliacaoDAO.fecharConexao(); } catch (SQLException e) { }
             }
         }
     }
 }
+
 
