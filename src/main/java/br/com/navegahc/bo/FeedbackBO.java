@@ -8,7 +8,7 @@ import java.util.*;
 
 public class FeedbackBO {
 
-    // Selecionar TUDO (com fechamento de conexões)
+    // Selecionar TUDO
     public List<Map<String, Object>> selecionarBo() throws ClassNotFoundException, SQLException {
         UsuarioDAO usuarioDAO = null;
         TempoUsoDAO tempoUsoDAO = null;
@@ -102,7 +102,6 @@ public class FeedbackBO {
             return resultado;
 
         } finally {
-            // ✅ FECHA TODAS AS CONEXÕES
             if (usuarioDAO != null) {
                 try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
             }
@@ -218,7 +217,6 @@ public class FeedbackBO {
             return feedback;
 
         } finally {
-            // ✅ FECHA TODAS AS CONEXÕES
             if (usuarioDAO != null) {
                 try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
             }
@@ -237,13 +235,32 @@ public class FeedbackBO {
         }
     }
 
-    // Inserir
-    public void inserirBo(Usuario usuario) throws ClassNotFoundException, SQLException {
+    // ✅ INSERIR (CORRIGIDO - SALVA TODOS OS CAMPOS)
+    public void inserirBo(Map<String, Object> feedbackCompleto) throws ClassNotFoundException, SQLException {
         UsuarioDAO usuarioDAO = null;
 
         try {
-            usuarioDAO = new UsuarioDAO();
+            // Cria o usuário
+            Usuario usuario = new Usuario();
+            usuario.setNome((String) feedbackCompleto.get("nome"));
 
+            // Converte idade para Integer
+            Object idadeObj = feedbackCompleto.get("idade");
+            if (idadeObj instanceof Integer) {
+                usuario.setIdade((Integer) idadeObj);
+            } else if (idadeObj instanceof Double) {
+                usuario.setIdade(((Double) idadeObj).intValue());
+            }
+
+            // DispositivoAcesso
+            if (feedbackCompleto.get("tipoDispositivo") != null) {
+                DispositivoAcesso dispositivo = new DispositivoAcesso();
+                dispositivo.setTipo((String) feedbackCompleto.get("tipoDispositivo"));
+                dispositivo.setSistema((String) feedbackCompleto.get("sistemaDispositivo"));
+                usuario.setDispositivoAcesso(dispositivo);
+            }
+
+            // Validações básicas
             if (usuario.getNome() == null || usuario.getNome().trim().isEmpty()) {
                 throw new SQLException("Nome é obrigatório");
             }
@@ -252,7 +269,63 @@ public class FeedbackBO {
                 throw new SQLException("Idade deve ser maior que zero");
             }
 
+            // Insere o usuário e pega o ID gerado
+            usuarioDAO = new UsuarioDAO();
             usuarioDAO.inserir(usuario);
+            int idGerado = usuario.getId();
+
+            // ✅ AGORA SALVA OS OUTROS DADOS NA MESMA LINHA
+
+            // Atualiza com os dados de TempoUso
+            if (feedbackCompleto.get("experiencia") != null || feedbackCompleto.get("sugestao") != null) {
+                String updateTempoUso = "UPDATE FORMULARIO_NAVEGA_HC SET experiencia = ?, sugestao = ?, tempo = ?, frequencia = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateTempoUso);
+                stmt.setString(1, (String) feedbackCompleto.get("experiencia"));
+                stmt.setString(2, (String) feedbackCompleto.get("sugestao"));
+                stmt.setString(3, (String) feedbackCompleto.get("tempo"));
+                stmt.setString(4, (String) feedbackCompleto.get("frequencia"));
+                stmt.setInt(5, idGerado);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            // Atualiza com a pergunta
+            if (feedbackCompleto.get("pergunta") != null) {
+                String updatePergunta = "UPDATE FORMULARIO_NAVEGA_HC SET pergunta = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updatePergunta);
+                stmt.setString(1, (String) feedbackCompleto.get("pergunta"));
+                stmt.setInt(2, idGerado);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            // Atualiza com a dificuldade
+            if (feedbackCompleto.get("tipoDificuldade") != null || feedbackCompleto.get("descricaoDificuldade") != null) {
+                String updateDificuldade = "UPDATE FORMULARIO_NAVEGA_HC SET tipo_dificuldade = ?, descricao_dificuldade = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateDificuldade);
+                stmt.setString(1, (String) feedbackCompleto.get("tipoDificuldade"));
+                stmt.setString(2, (String) feedbackCompleto.get("descricaoDificuldade"));
+                stmt.setInt(3, idGerado);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            // Atualiza com a avaliação
+            if (feedbackCompleto.get("avaliar") != null) {
+                String updateAvaliacao = "UPDATE FORMULARIO_NAVEGA_HC SET avaliar = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateAvaliacao);
+
+                Object avaliarObj = feedbackCompleto.get("avaliar");
+                if (avaliarObj instanceof Double) {
+                    stmt.setDouble(1, (Double) avaliarObj);
+                } else if (avaliarObj instanceof Integer) {
+                    stmt.setDouble(1, ((Integer) avaliarObj).doubleValue());
+                }
+
+                stmt.setInt(2, idGerado);
+                stmt.executeUpdate();
+                stmt.close();
+            }
 
         } finally {
             if (usuarioDAO != null) {
@@ -262,24 +335,50 @@ public class FeedbackBO {
     }
 
     // Atualizar
-    public void atualizarBo(Usuario usuario) throws ClassNotFoundException, SQLException {
+    public void atualizarBo(Map<String, Object> feedbackCompleto) throws ClassNotFoundException, SQLException {
         UsuarioDAO usuarioDAO = null;
 
         try {
+            Object idObj = feedbackCompleto.get("id");
+            int id = 0;
+            if (idObj instanceof Integer) {
+                id = (Integer) idObj;
+            } else if (idObj instanceof Double) {
+                id = ((Double) idObj).intValue();
+            }
+
             usuarioDAO = new UsuarioDAO();
 
             List<Usuario> usuarios = usuarioDAO.selecionar();
             boolean existe = false;
 
             for (Usuario u : usuarios) {
-                if (u.getId() == usuario.getId()) {
+                if (u.getId() == id) {
                     existe = true;
                     break;
                 }
             }
 
             if (!existe) {
-                throw new SQLException("Feedback não encontrado com ID: " + usuario.getId());
+                throw new SQLException("Feedback não encontrado com ID: " + id);
+            }
+
+            Usuario usuario = new Usuario();
+            usuario.setId(id);
+            usuario.setNome((String) feedbackCompleto.get("nome"));
+
+            Object idadeObj = feedbackCompleto.get("idade");
+            if (idadeObj instanceof Integer) {
+                usuario.setIdade((Integer) idadeObj);
+            } else if (idadeObj instanceof Double) {
+                usuario.setIdade(((Double) idadeObj).intValue());
+            }
+
+            if (feedbackCompleto.get("tipoDispositivo") != null) {
+                DispositivoAcesso dispositivo = new DispositivoAcesso();
+                dispositivo.setTipo((String) feedbackCompleto.get("tipoDispositivo"));
+                dispositivo.setSistema((String) feedbackCompleto.get("sistemaDispositivo"));
+                usuario.setDispositivoAcesso(dispositivo);
             }
 
             if (usuario.getNome() == null || usuario.getNome().trim().isEmpty()) {
@@ -291,6 +390,54 @@ public class FeedbackBO {
             }
 
             usuarioDAO.atualizar(usuario);
+
+            // Atualiza outros campos
+            if (feedbackCompleto.get("experiencia") != null || feedbackCompleto.get("sugestao") != null) {
+                String updateTempoUso = "UPDATE FORMULARIO_NAVEGA_HC SET experiencia = ?, sugestao = ?, tempo = ?, frequencia = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateTempoUso);
+                stmt.setString(1, (String) feedbackCompleto.get("experiencia"));
+                stmt.setString(2, (String) feedbackCompleto.get("sugestao"));
+                stmt.setString(3, (String) feedbackCompleto.get("tempo"));
+                stmt.setString(4, (String) feedbackCompleto.get("frequencia"));
+                stmt.setInt(5, id);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            if (feedbackCompleto.get("pergunta") != null) {
+                String updatePergunta = "UPDATE FORMULARIO_NAVEGA_HC SET pergunta = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updatePergunta);
+                stmt.setString(1, (String) feedbackCompleto.get("pergunta"));
+                stmt.setInt(2, id);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            if (feedbackCompleto.get("tipoDificuldade") != null || feedbackCompleto.get("descricaoDificuldade") != null) {
+                String updateDificuldade = "UPDATE FORMULARIO_NAVEGA_HC SET tipo_dificuldade = ?, descricao_dificuldade = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateDificuldade);
+                stmt.setString(1, (String) feedbackCompleto.get("tipoDificuldade"));
+                stmt.setString(2, (String) feedbackCompleto.get("descricaoDificuldade"));
+                stmt.setInt(3, id);
+                stmt.executeUpdate();
+                stmt.close();
+            }
+
+            if (feedbackCompleto.get("avaliar") != null) {
+                String updateAvaliacao = "UPDATE FORMULARIO_NAVEGA_HC SET avaliar = ? WHERE id = ?";
+                java.sql.PreparedStatement stmt = usuarioDAO.minhaConexao.prepareStatement(updateAvaliacao);
+
+                Object avaliarObj = feedbackCompleto.get("avaliar");
+                if (avaliarObj instanceof Double) {
+                    stmt.setDouble(1, (Double) avaliarObj);
+                } else if (avaliarObj instanceof Integer) {
+                    stmt.setDouble(1, ((Integer) avaliarObj).doubleValue());
+                }
+
+                stmt.setInt(2, id);
+                stmt.executeUpdate();
+                stmt.close();
+            }
 
         } finally {
             if (usuarioDAO != null) {
@@ -329,5 +476,6 @@ public class FeedbackBO {
         }
     }
 }
+
 
 
