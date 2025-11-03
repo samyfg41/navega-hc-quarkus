@@ -42,7 +42,7 @@ public class FeedbackResource {
         }
     }
 
-    // ✅ POST - Criar novo (RECEBE MAP AGORA)
+    // POST - Criar novo
     @POST
     public Response inserirRs(Map<String, Object> feedbackCompleto) throws ClassNotFoundException, SQLException {
         FeedbackBO feedbackBO = new FeedbackBO();
@@ -62,7 +62,7 @@ public class FeedbackResource {
         }
     }
 
-    // ✅ PUT - Atualizar (RECEBE MAP AGORA)
+    // PUT - Atualizar
     @PUT
     @Path("/{id}")
     public Response atualizarRs(@PathParam("id") int id, Map<String, Object> feedbackCompleto) throws ClassNotFoundException, SQLException {
