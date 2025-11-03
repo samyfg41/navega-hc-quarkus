@@ -1,20 +1,31 @@
-# Use Eclipse Temurin Java 17 (igual ao pom.xml)
-FROM eclipse-temurin:17-jdk-alpine
+# Use imagem com Maven e Java 17
+FROM maven:3.9-eclipse-temurin-17-alpine AS build
 
 # Cria e muda para o diretório da aplicação
 WORKDIR /app
 
-# Copia todo o código local para o container
-COPY . ./
+# Copia o pom.xml primeiro (para cache de dependências)
+COPY pom.xml .
 
-# Dá permissão de execução no mvnw
-RUN chmod +x mvnw
+# Baixa as dependências
+RUN mvn dependency:go-offline
+
+# Copia o resto do código
+COPY src ./src
 
 # Compila a aplicação
-RUN ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install
+RUN mvn clean package -DskipTests
+
+# Segunda etapa - Runtime
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Copia o JAR compilado da etapa anterior
+COPY --from=build /app/target/quarkus-app/ ./
 
 # Expõe a porta 8080
 EXPOSE 8080
 
-# Roda a aplicação Quarkus
-CMD ["sh", "-c", "java -jar target/quarkus-app/quarkus-run.jar"]
+# Roda a aplicação
+CMD ["java", "-jar", "quarkus-run.jar"]
