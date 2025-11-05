@@ -18,7 +18,6 @@ public class DificuldadeDAO {
         this.minhaConexao = new ConexaoFactory().conexao();
     }
 
-    // ✅ ADICIONA ESSE MÉTODO
     public void fecharConexao() throws SQLException {
         if (minhaConexao != null && !minhaConexao.isClosed()) {
             minhaConexao.close();

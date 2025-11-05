@@ -62,7 +62,7 @@ public class TesteAtualizar {
             objTempoUso.setFrequencia(texto("Digite a nova frequência:"));
 
             tempoUsoDAO = new TempoUsoDAO();
-            System.out.println(tempoUsoDAO.atualizar(objTempoUso)); // ✅ CORRIGIDO
+            System.out.println(tempoUsoDAO.atualizar(objTempoUso));
 
             //PerguntaPrincipalDAO
             objPerguntaPrincipal.setId(objUsuario.getId());
@@ -87,7 +87,7 @@ public class TesteAtualizar {
             System.out.println(avaliacaoDAO.atualizar(objAvaliacao));
 
         } finally {
-            // ✅ FECHA AS CONEXÕES
+            // fechando as conexões
             if (usuarioDAO != null) {
                 try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
             }

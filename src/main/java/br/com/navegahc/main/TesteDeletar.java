@@ -22,7 +22,7 @@ public class TesteDeletar {
             System.out.println(usuarioDAO.deletar(id));
 
         } finally {
-            // ✅ FECHA A CONEXÃO
+            // fechando a conexão
             if (usuarioDAO != null) {
                 try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
             }

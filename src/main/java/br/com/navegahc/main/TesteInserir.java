@@ -86,7 +86,7 @@ public class TesteInserir {
             System.out.println(avaliacaoDAO.inserir(objAvaliacao));
 
         } finally {
-            // ✅ FECHA AS CONEXÕES
+            // fechando as conexões
             if (usuarioDAO != null) {
                 try { usuarioDAO.fecharConexao(); } catch (SQLException e) { }
             }

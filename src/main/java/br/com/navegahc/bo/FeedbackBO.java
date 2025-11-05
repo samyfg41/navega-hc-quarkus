@@ -235,7 +235,7 @@ public class FeedbackBO {
         }
     }
 
-    // ✅ INSERIR (CORRIGIDO - SALVA TODOS OS CAMPOS)
+    // Inserir (salva todos os campos)
     public void inserirBo(Map<String, Object> feedbackCompleto) throws ClassNotFoundException, SQLException {
         UsuarioDAO usuarioDAO = null;
 
@@ -273,8 +273,6 @@ public class FeedbackBO {
             usuarioDAO = new UsuarioDAO();
             usuarioDAO.inserir(usuario);
             int idGerado = usuario.getId();
-
-            // ✅ AGORA SALVA OS OUTROS DADOS NA MESMA LINHA
 
             // Atualiza com os dados de TempoUso
             if (feedbackCompleto.get("experiencia") != null || feedbackCompleto.get("sugestao") != null) {
