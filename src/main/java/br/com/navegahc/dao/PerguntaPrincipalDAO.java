@@ -18,42 +18,46 @@ public class PerguntaPrincipalDAO {
         this.minhaConexao = new ConexaoFactory().conexao();
     }
 
-    // ✅ MUDOU: agora recebe o feedbackId como parâmetro e faz UPDATE
-    public String atualizar(int feedbackId, PerguntaPrincipal perguntaPrincipal) throws SQLException {
-        PreparedStatement stmt = minhaConexao.prepareStatement(
-                "UPDATE FORMULARIO_NAVEGA_HC SET pergunta = ? WHERE id = ?"
-        );
-        stmt.setString(1, perguntaPrincipal.getPergunta());
-        stmt.setInt(2, feedbackId);
-
-        int linhasAfetadas = stmt.executeUpdate();
-        stmt.close();
-
-        if (linhasAfetadas > 0) {
-            return "Pergunta cadastrada com sucesso!";
-        } else {
-            return "Erro ao cadastrar pergunta.";
+    public void fecharConexao() throws SQLException {
+        if (minhaConexao != null && !minhaConexao.isClosed()) {
+            minhaConexao.close();
         }
+    }
+
+    //Create
+    public String inserir(PerguntaPrincipal perguntaPrincipal) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "INSERT INTO FORMULARIO_NAVEGA_HC (id, pergunta) VALUES (?, ?)"
+        );
+        stmt.setInt(1, perguntaPrincipal.getId());
+        stmt.setString(2, perguntaPrincipal.getPergunta());
+
+        stmt.executeUpdate();
+        stmt.close();
+        return "Pergunta cadastrada com sucesso!";
     }
 
     //Read
     public List<PerguntaPrincipal> selecionar() throws SQLException {
-        List<PerguntaPrincipal> listaPerguntaPrincipal = new ArrayList<PerguntaPrincipal>();
-        PreparedStatement stmt = minhaConexao.prepareStatement("SELECT * FROM FORMULARIO_NAVEGA_HC");
+        List<PerguntaPrincipal> listaPerguntas = new ArrayList<PerguntaPrincipal>();
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT * FROM FORMULARIO_NAVEGA_HC"
+        );
 
         ResultSet rs = stmt.executeQuery();
 
         while (rs.next()){
-            PerguntaPrincipal objPerguntaPrincipal = new PerguntaPrincipal();
-            objPerguntaPrincipal.setId(rs.getInt("id"));
-            objPerguntaPrincipal.setPergunta(rs.getString("pergunta"));
-            listaPerguntaPrincipal.add(objPerguntaPrincipal);
+            PerguntaPrincipal objPergunta = new PerguntaPrincipal();
+            objPergunta.setId(rs.getInt("id"));
+            objPergunta.setPergunta(rs.getString("pergunta"));
+
+            listaPerguntas.add(objPergunta);
         }
-        return listaPerguntaPrincipal;
+        return listaPerguntas;
     }
 
-    //Update (para atualizar um registro existente pelo ID)
-    public String atualizarPorId(PerguntaPrincipal perguntaPrincipal) throws SQLException {
+    //Update
+    public String atualizar(PerguntaPrincipal perguntaPrincipal) throws SQLException {
         PreparedStatement stmt = minhaConexao.prepareStatement(
                 "UPDATE FORMULARIO_NAVEGA_HC SET pergunta = ? WHERE id = ?"
         );
@@ -64,9 +68,9 @@ public class PerguntaPrincipalDAO {
         stmt.close();
 
         if (linhasAfetadas > 0) {
-            return "Informações de PerguntaPrincipal atualizadas com sucesso";
+            return "Pergunta atualizada com sucesso";
         } else {
-            return "Nenhuma informação de PerguntaPrincipal encontrada com o ID informado.";
+            return "Nenhuma pergunta encontrada com o ID informado.";
         }
     }
 
@@ -82,16 +86,11 @@ public class PerguntaPrincipalDAO {
         stmt.close();
 
         if (linhasAfetadas > 0) {
-            return "Informações de PerguntaPrincipal deletadas com sucesso!";
+            return "Pergunta deletada com sucesso!";
         } else {
-            return "Nenhuma informação de PerguntaPrincipal encontrada com esse ID.";
-        }
-    }
-
-    public void fecharConexao() throws SQLException {
-        if (minhaConexao != null && !minhaConexao.isClosed()) {
-            minhaConexao.close();
+            return "Nenhuma pergunta encontrada com esse ID.";
         }
     }
 }
+
 

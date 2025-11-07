@@ -19,51 +19,58 @@ public class UsuarioDAO {
         this.minhaConexao = new ConexaoFactory().conexao();
     }
 
+    public void fecharConexao() throws SQLException {
+        if (minhaConexao != null && !minhaConexao.isClosed()) {
+            minhaConexao.close();
+        }
+    }
+
     //Create
     public String inserir(Usuario usuario) throws SQLException {
-        String sql = "Insert into FORMULARIO_NAVEGA_HC (nome, idade, tipo_dispositivo, sistema_dispositivo) values (?, ?, ?, ?)";
-
         PreparedStatement stmt = minhaConexao.prepareStatement(
-                "Insert into FORMULARIO_NAVEGA_HC (nome, idade, tipo_dispositivo, sistema_dispositivo) values (?, ?, ?, ?)", new String[] {"id"}
+                "INSERT INTO FORMULARIO_NAVEGA_HC (nome, idade, tipo_dispositivo, sistema_dispositivo) VALUES (?, ?, ?, ?)",
+                new String[] {"id"}
         );
-            stmt.setString(1, usuario.getNome());
-            stmt.setInt(2, usuario.getIdade());
+        stmt.setString(1, usuario.getNome());
+        stmt.setInt(2, usuario.getIdade());
 
-            if (usuario.getDispositivoAcesso() !=null){
-                stmt.setString(3, usuario.getDispositivoAcesso().getTipo());
-                stmt.setString(4, usuario.getDispositivoAcesso().getSistema());
-            } else {
-                stmt.setString(3, null);
-                stmt.setString(4, null);
-            }
+        if (usuario.getDispositivoAcesso() != null){
+            stmt.setString(3, usuario.getDispositivoAcesso().getTipo());
+            stmt.setString(4, usuario.getDispositivoAcesso().getSistema());
+        } else {
+            stmt.setString(3, null);
+            stmt.setString(4, null);
+        }
 
-            stmt.executeUpdate();
+        stmt.executeUpdate();
 
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                usuario.setId(rs.getInt(1));
-            }
+        ResultSet rs = stmt.getGeneratedKeys();
+        if (rs.next()) {
+            usuario.setId(rs.getInt(1));
+        }
 
-            stmt.close();
-            return "Usuário cadastrado com sucesso! ID gerado: " + usuario.getId();
+        stmt.close();
+        return "Usuário cadastrado com sucesso! ID gerado: " + usuario.getId();
     }
 
     //Read
     public List<Usuario> selecionar() throws SQLException {
         List<Usuario> listaUsuarios = new ArrayList<Usuario>();
-        PreparedStatement stmt = minhaConexao.prepareStatement("select * from FORMULARIO_NAVEGA_HC");
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "SELECT * FROM FORMULARIO_NAVEGA_HC"
+        );
 
         ResultSet rs = stmt.executeQuery();
 
         while (rs.next()){
             Usuario objUsuario = new Usuario();
-            objUsuario.setId(rs.getInt(1));
-            objUsuario.setNome(rs.getString(2));
-            objUsuario.setIdade(rs.getInt(3));
+            objUsuario.setId(rs.getInt("id"));
+            objUsuario.setNome(rs.getString("nome"));
+            objUsuario.setIdade(rs.getInt("idade"));
 
             DispositivoAcesso objDispositivoAcesso = new DispositivoAcesso();
-            objDispositivoAcesso.setTipo(rs.getString(4));
-            objDispositivoAcesso.setSistema(rs.getString(5));
+            objDispositivoAcesso.setTipo(rs.getString("tipo_dispositivo"));
+            objDispositivoAcesso.setSistema(rs.getString("sistema_dispositivo"));
             objUsuario.setDispositivoAcesso(objDispositivoAcesso);
 
             listaUsuarios.add(objUsuario);
@@ -71,10 +78,11 @@ public class UsuarioDAO {
         return listaUsuarios;
     }
 
-    //UpDate
-    public String atualizar (Usuario usuario) throws SQLException {
-        PreparedStatement stmt = minhaConexao.prepareStatement
-                ("Update FORMULARIO_NAVEGA_HC  set NOME = ?, IDADE = ?, TIPO_DISPOSITIVO = ?, SISTEMA_DISPOSITIVO = ? where id = ?");
+    //Update
+    public String atualizar(Usuario usuario) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "UPDATE FORMULARIO_NAVEGA_HC SET nome = ?, idade = ?, tipo_dispositivo = ?, sistema_dispositivo = ? WHERE id = ?"
+        );
         stmt.setString(1, usuario.getNome());
         stmt.setInt(2, usuario.getIdade());
 
@@ -99,9 +107,10 @@ public class UsuarioDAO {
     }
 
     //Delete
-    public String deletar (int id) throws SQLException {
-        PreparedStatement stmt = minhaConexao.prepareStatement
-                ("Delete from FORMULARIO_NAVEGA_HC where id = ?");
+    public String deletar(int id) throws SQLException {
+        PreparedStatement stmt = minhaConexao.prepareStatement(
+                "DELETE FROM FORMULARIO_NAVEGA_HC WHERE id = ?"
+        );
 
         stmt.setInt(1, id);
 
@@ -112,12 +121,6 @@ public class UsuarioDAO {
             return "Usuário deletado com sucesso!";
         } else {
             return "Nenhum usuário encontrado com esse ID.";
-        }
-    }
-
-    public void fecharConexao() throws SQLException {
-        if (minhaConexao != null && !minhaConexao.isClosed()) {
-            minhaConexao.close();
         }
     }
 }
